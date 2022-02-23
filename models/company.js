@@ -42,15 +42,22 @@ class Company {
    *
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
+  // TODO: update docstring
+  // TODO: guard function on min > max => throw error
+  // TODO: check which params are passed, then build conditionals for WHERE
+  // TODO: see if we can re-use sqlPartialUpdate for formatting
+  // TODO: join where clause and pass
+  // TODO: WHERE name ILIKE $1 AND num_employees > $2 AND num_employees < $3
 
-  static async findAll() {
+  static async findAll( filters ) {
     const companiesRes = await db.query( `SELECT handle,
                 name,
                 description,
                 num_employees AS "numEmployees",
                 logo_url AS "logoUrl"
            FROM companies
-           ORDER BY name` );
+           ORDER BY name
+           ${whereClause}`, params );
     return companiesRes.rows;
   }
 
