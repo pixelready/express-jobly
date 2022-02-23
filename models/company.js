@@ -38,20 +38,47 @@ class Company {
     return company;
   }
 
-  /** Find all companies.
-   *
+  /** Find all companies. Optionally pass filters: {name, minEmployees, maxEmployees}
+   * @param {object} filters
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
+   * for all matched companies
    * */
-  // TODO: update docstring
-  // TODO: guard function on min > max => throw error
+
   // TODO: check which params are passed, then build conditionals for WHERE
   // TODO: see if we can re-use sqlPartialUpdate for formatting
   // TODO: join where clause and pass
   // TODO: WHERE name ILIKE $1 AND num_employees > $2 AND num_employees < $3
 
   static async findAll( filters ) {
-    let whereClause = "";
-    let params = "";
+    if ( filters.minEmployees && filters.maxEmployees && filters.minEmployees > filters.maxEmployees ) {
+      throw new BadRequestError();
+    }
+    let whereClause = '';
+    let values;
+    if ( filters.keys()
+      .length !== 0 ) {
+      const { setCols, values } = sqlForPartialUpdate( filters );
+      const whereClauseBuilder = [];
+
+      if ( setCols[ 'name' ] ) {
+        whereClauseBuilder.push( `name ILIKE ${setCols['name']}` );
+        values[ indexOf( setCols[ 'name' ] ) ] = `%${
+        values[indexOf(setCols['name'])]}%`;
+      }
+      if ( setCols[ 'minEmployees' ] ) {
+        whereClauseBuilder.push( `num_employees > ${setCols['minEmployees']}` );
+      }
+      if ( setCols[ 'maxEmployees' ] ) {
+        whereClauseBuilder.push( `num_employees < ${setCols['maxEmployees']}` );
+      }
+
+      whereClause = 'WHERE ';
+      whereClause += whereClauseBuilder.join( ' AND ' );
+    }
+
+    console.log( 'WHERECLAUSE: ', whereClause );
+    console.log( 'VALUES: ', values );
+
     const companiesRes = await db.query( `SELECT handle,
                 name,
                 description,
@@ -59,7 +86,7 @@ class Company {
                 logo_url AS "logoUrl"
            FROM companies
            ORDER BY name
-           ${whereClause}`, params );
+           ${whereClause}`, [ ...values ] );
     return companiesRes.rows;
   }
 
