@@ -50,6 +50,8 @@ class Company {
   // TODO: WHERE name ILIKE $1 AND num_employees > $2 AND num_employees < $3
 
   static async findAll( filters ) {
+    let whereClause = "";
+    let params = "";
     const companiesRes = await db.query( `SELECT handle,
                 name,
                 description,
