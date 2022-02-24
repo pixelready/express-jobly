@@ -110,6 +110,21 @@ describe("GET /companies", function () {
           ]
     });
   });
+  test("works: filter by maxEmployees", async function () {
+    const resp = await request(app).get("/companies/?maxEmployees=1");
+    expect(resp.body).toEqual({
+      companies:
+          [
+            {
+              handle: "c1",
+              name: "C1",
+              description: "Desc1",
+              numEmployees: 1,
+              logoUrl: "http://c1.img",
+            }
+          ]
+    });
+  });
   test("fails: Bad Request on unexpected filter", async function(){
     const resp = await request(app).get("/companies/?flavor=blue");
     expect(resp.statusCode).toEqual(400);
@@ -232,7 +247,7 @@ describe("DELETE /companies/:handle", function () {
     expect(resp.body).toEqual({ deleted: "c1" });
   });
 
-  test("unauth for anon", async function () {
+  test("unauth for nonadmin", async function () {
     const resp = await request(app)
         .delete(`/companies/c1`);
     expect(resp.statusCode).toEqual(401);
