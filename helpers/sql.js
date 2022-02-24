@@ -25,8 +25,8 @@ function sqlForPartialUpdate( dataToUpdate, jsToSql ) {
  * Accepts an object with filters like { name : 'C1',... }, and returns an object 
  * containing an array of parameter tokens and and an array of values for insertion
  * into a SQL query
- * @param {object} dataToUpdate - Object like `{columnName: valueToUpdate}`
- * @returns Array of column names and parameter tokens like `['"col_name"=$1']`
+ * @param {object} dataToUpdate - Object like `{name: filterValue}`
+ * @returns Object with arrays of parameter tokens like `$1` and corresponding values
  */
 function sqlForFilter( filters ) {
   const keys = Object.keys( filters );

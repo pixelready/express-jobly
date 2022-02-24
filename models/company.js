@@ -56,15 +56,14 @@ class Company {
     let params = [];
 
     const { name, minEmployees, maxEmployees } = filters;
-//TODO: explain response from helper function
+
     if ( Object.keys( filters ).length !== 0 ) {
       
       const whereClauseBuilder = [];
       let counter = 0;
-      
+
       if ( name ) {
         counter++;
-        // console.log( "IF NAME FILTER", placeHolders[ nameIndex ] );
         whereClauseBuilder.push( `name ILIKE $${counter}` );
         params[ counter-1 ] = `%${name}%`;
       }
