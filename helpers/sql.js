@@ -6,7 +6,8 @@ const { BadRequestError } = require( "../expressError" );
  * returns an array of column names and parameter tokens for insertion into a SQL
  * query
  * @param {object} dataToUpdate - Object like `{columnName: valueToUpdate}`
- * @returns Array of column names and parameter tokens like `['"col_name"=$1']`
+ * @returns Object containing arrays of: column names and parameter tokens 
+ * like: `['"col_name"=$1']` and values
  */
 
 function sqlForPartialUpdate( dataToUpdate, jsToSql ) {
@@ -18,15 +19,22 @@ function sqlForPartialUpdate( dataToUpdate, jsToSql ) {
   const cols = keys.map( ( colName, idx ) => `"${jsToSql[colName] || colName}"=$${idx + 1}` );
 
   return { setCols: cols.join( ", " ), values: Object.values( dataToUpdate ) };
-}
+};
 
+/**
+ * Accepts an object with filters like { name : 'C1',... }, and returns an object 
+ * containing an array of parameter tokens and and an array of values for insertion
+ * into a SQL query
+ * @param {object} dataToUpdate - Object like `{columnName: valueToUpdate}`
+ * @returns Array of column names and parameter tokens like `['"col_name"=$1']`
+ */
 function sqlForFilter( filters ) {
   const keys = Object.keys( filters );
 
   const placeHolders = keys.map( ( value, idx ) => `$${idx + 1}` );
 
   return { placeHolders: placeHolders, values: Object.values( filters ) };
-}
+};
 
 module.exports = {
   sqlForPartialUpdate,

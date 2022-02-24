@@ -43,43 +43,46 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * for all matched companies
    * */
-
+//TODO: more descriptive docstring
   static async findAll( filters ) {
-    if ( filters.minEmployees && filters.maxEmployees && filters.minEmployees > filters.maxEmployees ) {
+    // Guard against min > max
+    if ( filters.minEmployees !== undefined
+        && filters.maxEmployees !== undefined
+        && filters.minEmployees > filters.maxEmployees ) {
       throw new BadRequestError();
     }
+
     let whereClause = "";
     let params = [];
+
     const { name, minEmployees, maxEmployees } = filters;
-    if ( Object.keys( filters )
-      .length !== 0 ) {
-      const { placeHolders, values } = sqlForFilter( filters );
+//TODO: explain response from helper function
+    if ( Object.keys( filters ).length !== 0 ) {
+      
       const whereClauseBuilder = [];
-      console.log( "NAME FILTER", placeHolders );
+      let counter = 0;
+      
       if ( name ) {
-        let nameIndex = values.indexOf( name );
-        console.log( "IF NAME FILTER", placeHolders[ nameIndex ] );
-        whereClauseBuilder.push( `name ILIKE ${placeHolders[nameIndex]}` );
-        values[ nameIndex ] = `%${values[nameIndex]}%`;
+        counter++;
+        // console.log( "IF NAME FILTER", placeHolders[ nameIndex ] );
+        whereClauseBuilder.push( `name ILIKE $${counter}` );
+        params[ counter-1 ] = `%${name}%`;
       }
       if ( minEmployees ) {
-        let minIndex = values.indexOf( minEmployees );
-        whereClauseBuilder.push( `num_employees >= ${placeHolders[minIndex]}` );
+        counter++;
+        whereClauseBuilder.push( `num_employees >= $${counter}` );
+        params.push(minEmployees);
       }
       if ( maxEmployees ) {
-        let maxIndex = values.indexOf( maxEmployees );
-        whereClauseBuilder.push( `num_employees <= ${placeHolders[maxIndex]}` );
+        counter++;
+        whereClauseBuilder.push( `num_employees <= $${counter}` );
+        params.push(maxEmployees);
       }
 
       whereClause = "WHERE ";
-
-      whereClause += whereClauseBuilder.join( " AND " ) || whereClauseBuilder[ 0 ];
-      params = [ ...values ] || [];
-      console.log( "VALUES: ", values );
+      whereClause += whereClauseBuilder.join( " AND " );
     }
 
-    console.log( "WHERECLAUSE: ", whereClause );
-    console.log( "PARAMS: ", params );
 
     const companiesRes = await db.query( `SELECT handle,
                 name,
@@ -90,6 +93,7 @@ class Company {
            ${whereClause}
            ORDER BY name
            `, params );
+
     return companiesRes.rows;
   }
 

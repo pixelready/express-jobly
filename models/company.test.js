@@ -80,8 +80,8 @@ describe( "findAll", function() {
 
   test( "works: with name filter", async function() {
     let companies = await Company.findAll( {
-      name: "C1"
-    }, {} );
+      name: "1"
+    } );
     expect( companies )
       .toEqual( [ {
         handle: "c1",
@@ -94,7 +94,7 @@ describe( "findAll", function() {
   test( "works: with minEmployees filter", async function() {
     let companies = await Company.findAll( {
       minEmployees: 3
-    }, {} );
+    } );
     expect( companies )
       .toEqual( [ {
         handle: "c3",
@@ -107,7 +107,7 @@ describe( "findAll", function() {
   test( "works: with maxEmployees filter", async function() {
     let companies = await Company.findAll( {
       maxEmployees: 1
-    }, {} );
+    } );
     expect( companies )
       .toEqual( [ {
         handle: "c1",
@@ -137,11 +137,11 @@ describe( "findAll", function() {
         logoUrl: "http://c3.img"
       } ] );
   } );
-  test( "conflicting filters returns 0 results", async function() {
+  test( "no match filter combination returns 0", async function() {
     let companies = await Company.findAll( {
       name: "C1",
       minEmployees: 3
-    }, {} );
+    });
     expect( companies.length )
       .toEqual( 0 );
   } );
@@ -150,7 +150,7 @@ describe( "findAll", function() {
       let companies = await Company.findAll( {
         minEmployees: 3,
         maxEmployees: 1
-      }, {} );
+      });
       fail();
     } catch ( err ) {
       expect( err instanceof BadRequestError )

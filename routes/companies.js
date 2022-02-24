@@ -41,26 +41,20 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
  * Can filter on provided search filters:
  * - minEmployees
  * - maxEmployees
- * - nameLike (will find case-insensitive, partial matches)
+ * - name (will find case-insensitive, partial matches)
  *
  * Authorization required: none
  */
-// TODO: update docstring
-// TODO: add schema validation guard function
-// TODO: build and add filters object as argument on findAll()
-router.get("/", async function (req, res, next) {
-  let filters = {};
-  if (!req.query) {
-    const { name, minEmployees, maxEmployees } = req.query;
-    filters = { name, minEmployees, maxEmployees };
-    const validator = jsonschema.validate(req.query, companyFilterSchema);
-    if (!validator.valid) {
-      const errs = validator.errors.map((e) => e.stack);
-      throw new BadRequestError(errs);
-    }
-  }
 
-  console.log("QUERY PARAM", req.query);
+router.get("/", async function (req, res, next) {
+  let filters = req.query;
+
+  const validator = jsonschema.validate(req.query, companyFilterSchema);
+
+  if (!validator.valid) {
+    const errs = validator.errors.map((e) => e.stack);
+    throw new BadRequestError(errs);
+  }
 
   const companies = await Company.findAll(filters);
   return res.json({ companies });

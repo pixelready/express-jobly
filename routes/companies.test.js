@@ -95,7 +95,7 @@ describe("GET /companies", function () {
           ],
     });
   });
-  test("filter by name", async function () {
+  test("works: filter by name", async function () {
     const resp = await request(app).get("/companies/?name=C1");
     expect(resp.body).toEqual({
       companies:
@@ -109,6 +109,10 @@ describe("GET /companies", function () {
             }
           ]
     });
+  });
+  test("fails: Bad Request on unexpected filter", async function(){
+    const resp = await request(app).get("/companies/?flavor=blue");
+    expect(resp.statusCode).toEqual(400);
   });
   test("fails: test next() handler", async function () {
     // there's no normal failure event which will cause this route to fail ---
