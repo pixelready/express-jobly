@@ -5,6 +5,8 @@ const { UnauthorizedError } = require("../expressError");
 const {
   authenticateJWT,
   ensureLoggedIn,
+  ensureAdmin,
+  ensureAdminOrCurrentUser
 } = require("./auth");
 
 
@@ -74,5 +76,59 @@ describe("ensureLoggedIn", function () {
       expect(err instanceof UnauthorizedError).toBeTruthy();
     };
     ensureLoggedIn(req, res, next);
+  });
+});
+
+describe("ensureAdmin", function () {
+  test("works", function () {
+    expect.assertions(1);
+    const req = {};
+    const res = { locals: { user: { isAdmin: true } } };
+    const next = function (err) {
+      expect(err).toBeFalsy();
+    };
+    ensureAdmin(req, res, next);
+  });
+
+  test("unauth if not admin", function () {
+    expect.assertions(1);
+    const req = {};
+    const res = { locals: { user: { isAdmin: false } } };
+    const next = function (err) {
+      expect(err instanceof UnauthorizedError).toBeTruthy();
+    };
+    ensureAdmin(req, res, next);
+  });
+});
+
+describe("ensureAdminOrCurrentUser", function () {
+  test("works if admin", function () {
+    expect.assertions(1);
+    const req = {};
+    const res = { locals: { user: { isAdmin: true } } };
+    const next = function (err) {
+      expect(err).toBeFalsy();
+    };
+    ensureAdminOrCurrentUser(req, res, next);
+  });
+
+  test("works if current user targeting own endpoint", function () {
+    expect.assertions(1);
+    const res = { locals: { user: { username:'u1', isAdmin: false } } };
+    const req = { params: { username: 'u1' }};
+    const next = function (err) {
+      expect(err).toBeFalsy();
+    };
+    ensureAdminOrCurrentUser(req, res, next);
+  });
+
+  test("unauth if not admin or current user targeting own endpoint", function () {
+    expect.assertions(1);
+    const req = { params: { username: 'u2' }};
+    const res = { locals: { user: { username:'u1', isAdmin: false } } };
+    const next = function (err) {
+      expect(err instanceof UnauthorizedError).toBeTruthy();
+    };
+    ensureAdminOrCurrentUser(req, res, next);
   });
 });

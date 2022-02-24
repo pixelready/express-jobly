@@ -180,7 +180,7 @@ describe("GET /users", function () {
     await db.query("DROP TABLE users CASCADE");
     const resp = await request(app)
       .get("/users")
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${a1Token}`);
     expect(resp.statusCode).toEqual(500);
   });
 });
@@ -231,7 +231,7 @@ describe("GET /users/:username", function () {
   test("not found if user not found", async function () {
     const resp = await request(app)
       .get(`/users/nope`)
-      .set("authorization", `Bearer ${u1Token}`);
+      .set("authorization", `Bearer ${a1Token}`);
     expect(resp.statusCode).toEqual(404);
   });
 });
@@ -357,15 +357,6 @@ describe("PATCH /users/:username", () => {
         password: "new-password",
       })
       .set("authorization", `Bearer ${u2Token}`);
-    expect(resp.body).toEqual({
-      user: {
-        username: "u1",
-        firstName: "U1F",
-        lastName: "U1L",
-        email: "user1@user.com",
-        isAdmin: false,
-      },
-    });
     expect(resp.statusCode).toEqual(401);
   });
 });
