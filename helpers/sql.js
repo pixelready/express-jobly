@@ -20,6 +20,22 @@ function sqlForPartialUpdate( dataToUpdate, jsToSql ) {
   return { setCols: cols.join( ', ' ), values: Object.values( dataToUpdate ) };
 }
 
+function sqlForFilter( filters ) {
+  const keys = Object.keys( filters );
+  if ( keys.length === 0 )
+    throw new BadRequestError( 'No data' );
+
+
+  const placeHolders = keys.map( ( idx ) => `$${idx + 1}` );
+
+  return { placeHolders: placeHolders ,values: Object.values( filters )};
+}
+
+
+
+
+
 module.exports = {
-  sqlForPartialUpdate
+  sqlForPartialUpdate,
+  sqlForFilter
 };

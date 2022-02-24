@@ -2,7 +2,7 @@
 
 const db = require("../db");
 const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForPartialUpdate } = require("../helpers/sql");
+const { sqlForFilter } = require("../helpers/sql");
 
 /** Related functions for companies. */
 
@@ -64,30 +64,39 @@ class Company {
       throw new BadRequestError();
     }
     let whereClause = "";
-    let values = [];
+    let params = [];
+    const {name , minEmployees, maxEmployees} = filters;
     if (Object.keys(filters).length !== 0) {
-      const { setCols, values } = sqlForPartialUpdate(filters);
-      const whereClauseBuilder = [];
 
-      if (setCols["name"]) {
-        whereClauseBuilder.push(`name ILIKE ${setCols["name"]}`);
-        values[indexOf(setCols["name"])] = `%${
-          values[indexOf(setCols["name"])]
+      const { placeHolders, values } = sqlForFilter(filters);
+      const whereClauseBuilder = [];
+      console.log("NAME FILTER", placeHolders);
+      if (name) {
+        let nameIndex = values.indexOf(name);
+        console.log("IF NAME FILTER", placeHolders);
+        whereClauseBuilder.push(`name ILIKE ${placeHolders}`);
+        values[nameIndex] = `%${
+          values[nameIndex]
         }%`;
       }
-      if (setCols["minEmployees"]) {
-        whereClauseBuilder.push(`num_employees > ${setCols["minEmployees"]}`);
+      if (minEmployees) {
+        whereClauseBuilder.push(`num_employees > ${placeHolders["minEmployees"]}`);
       }
-      if (setCols["maxEmployees"]) {
-        whereClauseBuilder.push(`num_employees < ${setCols["maxEmployees"]}`);
+      if (maxEmployees) {
+        whereClauseBuilder.push(`num_employees < ${placeHolders["maxEmployees"]}`);
       }
 
       whereClause = "WHERE ";
-      whereClause += whereClauseBuilder.join(" AND ");
+
+      whereClause += whereClauseBuilder.join(" AND ") || whereClauseBuilder[0];
+      params = [...values] || [];
+      console.log("VALUES: ", values);
+      
+
     }
 
     console.log("WHERECLAUSE: ", whereClause);
-    console.log("VALUES: ", values);
+    console.log("PARAMS: ", params);
 
     const companiesRes = await db.query(
       `SELECT handle,
@@ -98,7 +107,7 @@ class Company {
            FROM companies
            ORDER BY name
            ${whereClause}`,
-      [...values]
+          params
     );
     return companiesRes.rows;
   }
@@ -175,6 +184,7 @@ class Company {
            RETURNING handle`,
       [handle]
     );
+
     const company = result.rows[0];
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
