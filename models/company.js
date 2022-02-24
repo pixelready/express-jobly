@@ -1,8 +1,8 @@
 "use strict";
 
-const db = require("../db");
-const { BadRequestError, NotFoundError } = require("../expressError");
-const { sqlForFilter } = require("../helpers/sql");
+const db = require( "../db" );
+const { BadRequestError, NotFoundError } = require( "../expressError" );
+const { sqlForFilter, sqlForPartialUpdate } = require( "../helpers/sql" );
 
 /** Related functions for companies. */
 
@@ -16,19 +16,15 @@ class Company {
    * Throws BadRequestError if company already in database.
    * */
 
-  static async create({ handle, name, description, numEmployees, logoUrl }) {
-    const duplicateCheck = await db.query(
-      `SELECT handle
+  static async create( { handle, name, description, numEmployees, logoUrl } ) {
+    const duplicateCheck = await db.query( `SELECT handle
            FROM companies
-           WHERE handle = $1`,
-      [handle]
-    );
+           WHERE handle = $1`, [ handle ] );
 
-    if (duplicateCheck.rows[0])
-      throw new BadRequestError(`Duplicate company: ${handle}`);
+    if ( duplicateCheck.rows[ 0 ] )
+      throw new BadRequestError( `Duplicate company: ${handle}` );
 
-    const result = await db.query(
-      `INSERT INTO companies(
+    const result = await db.query( `INSERT INTO companies(
           handle,
           name,
           description,
@@ -36,10 +32,8 @@ class Company {
           logo_url)
            VALUES
              ($1, $2, $3, $4, $5)
-           RETURNING handle, name, description, num_employees AS "numEmployees", logo_url AS "logoUrl"`,
-      [handle, name, description, numEmployees, logoUrl]
-    );
-    const company = result.rows[0];
+           RETURNING handle, name, description, num_employees AS "numEmployees", logo_url AS "logoUrl"`, [ handle, name, description, numEmployees, logoUrl ] );
+    const company = result.rows[ 0 ];
 
     return company;
   }
@@ -50,65 +44,52 @@ class Company {
    * for all matched companies
    * */
 
-  // TODO: check which params are passed, then build conditionals for WHERE
-  // TODO: see if we can re-use sqlPartialUpdate for formatting
-  // TODO: join where clause and pass
-  // TODO: WHERE name ILIKE $1 AND num_employees > $2 AND num_employees < $3
-
-  static async findAll(filters) {
-    if (
-      filters.minEmployees &&
-      filters.maxEmployees &&
-      filters.minEmployees > filters.maxEmployees
-    ) {
+  static async findAll( filters ) {
+    if ( filters.minEmployees && filters.maxEmployees && filters.minEmployees > filters.maxEmployees ) {
       throw new BadRequestError();
     }
     let whereClause = "";
     let params = [];
-    const {name , minEmployees, maxEmployees} = filters;
-    if (Object.keys(filters).length !== 0) {
-
-      const { placeHolders, values } = sqlForFilter(filters);
+    const { name, minEmployees, maxEmployees } = filters;
+    if ( Object.keys( filters )
+      .length !== 0 ) {
+      const { placeHolders, values } = sqlForFilter( filters );
       const whereClauseBuilder = [];
-      console.log("NAME FILTER", placeHolders);
-      if (name) {
-        let nameIndex = values.indexOf(name);
-        console.log("IF NAME FILTER", placeHolders);
-        whereClauseBuilder.push(`name ILIKE ${placeHolders}`);
-        values[nameIndex] = `%${
-          values[nameIndex]
-        }%`;
+      console.log( "NAME FILTER", placeHolders );
+      if ( name ) {
+        let nameIndex = values.indexOf( name );
+        console.log( "IF NAME FILTER", placeHolders[ nameIndex ] );
+        whereClauseBuilder.push( `name ILIKE ${placeHolders[nameIndex]}` );
+        values[ nameIndex ] = `%${values[nameIndex]}%`;
       }
-      if (minEmployees) {
-        whereClauseBuilder.push(`num_employees > ${placeHolders["minEmployees"]}`);
+      if ( minEmployees ) {
+        let minIndex = values.indexOf( minEmployees );
+        whereClauseBuilder.push( `num_employees >= ${placeHolders[minIndex]}` );
       }
-      if (maxEmployees) {
-        whereClauseBuilder.push(`num_employees < ${placeHolders["maxEmployees"]}`);
+      if ( maxEmployees ) {
+        let maxIndex = values.indexOf( maxEmployees );
+        whereClauseBuilder.push( `num_employees <= ${placeHolders[maxIndex]}` );
       }
 
       whereClause = "WHERE ";
 
-      whereClause += whereClauseBuilder.join(" AND ") || whereClauseBuilder[0];
-      params = [...values] || [];
-      console.log("VALUES: ", values);
-      
-
+      whereClause += whereClauseBuilder.join( " AND " ) || whereClauseBuilder[ 0 ];
+      params = [ ...values ] || [];
+      console.log( "VALUES: ", values );
     }
 
-    console.log("WHERECLAUSE: ", whereClause);
-    console.log("PARAMS: ", params);
+    console.log( "WHERECLAUSE: ", whereClause );
+    console.log( "PARAMS: ", params );
 
-    const companiesRes = await db.query(
-      `SELECT handle,
+    const companiesRes = await db.query( `SELECT handle,
                 name,
                 description,
                 num_employees AS "numEmployees",
                 logo_url AS "logoUrl"
            FROM companies
+           ${whereClause}
            ORDER BY name
-           ${whereClause}`,
-          params
-    );
+           `, params );
     return companiesRes.rows;
   }
 
@@ -120,21 +101,19 @@ class Company {
    * Throws NotFoundError if not found.
    **/
 
-  static async get(handle) {
-    const companyRes = await db.query(
-      `SELECT handle,
+  static async get( handle ) {
+    const companyRes = await db.query( `SELECT handle,
                 name,
                 description,
                 num_employees AS "numEmployees",
                 logo_url AS "logoUrl"
            FROM companies
-           WHERE handle = $1`,
-      [handle]
-    );
+           WHERE handle = $1`, [ handle ] );
 
-    const company = companyRes.rows[0];
+    const company = companyRes.rows[ 0 ];
 
-    if (!company) throw new NotFoundError(`No company: ${handle}`);
+    if ( !company )
+      throw new NotFoundError( `No company: ${handle}` );
 
     return company;
   }
@@ -151,22 +130,27 @@ class Company {
    * Throws NotFoundError if not found.
    */
 
-  static async update(handle, data) {
-    const { setCols, values } = sqlForPartialUpdate(data, {
+  static async update( handle, data ) {
+    const { setCols, values } = sqlForPartialUpdate( data, {
       numEmployees: "num_employees",
-      logoUrl: "logo_url",
-    });
-    const handleVarIdx = "$" + (values.length + 1);
+      logoUrl: "logo_url"
+    } );
+    const handleVarIdx = "$" + (
+      values.length + 1 );
 
     const querySql = `
       UPDATE companies
       SET ${setCols}
         WHERE handle = ${handleVarIdx}
         RETURNING handle, name, description, num_employees AS "numEmployees", logo_url AS "logoUrl"`;
-    const result = await db.query(querySql, [...values, handle]);
-    const company = result.rows[0];
+    const result = await db.query( querySql, [
+      ...values,
+      handle
+    ] );
+    const company = result.rows[ 0 ];
 
-    if (!company) throw new NotFoundError(`No company: ${handle}`);
+    if ( !company )
+      throw new NotFoundError( `No company: ${handle}` );
 
     return company;
   }
@@ -176,18 +160,16 @@ class Company {
    * Throws NotFoundError if company not found.
    **/
 
-  static async remove(handle) {
-    const result = await db.query(
-      `DELETE
+  static async remove( handle ) {
+    const result = await db.query( `DELETE
            FROM companies
            WHERE handle = $1
-           RETURNING handle`,
-      [handle]
-    );
+           RETURNING handle`, [ handle ] );
 
-    const company = result.rows[0];
+    const company = result.rows[ 0 ];
 
-    if (!company) throw new NotFoundError(`No company: ${handle}`);
+    if ( !company )
+      throw new NotFoundError( `No company: ${handle}` );
   }
 }
 
