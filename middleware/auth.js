@@ -63,10 +63,13 @@ function ensureAdmin(req, res, next) {
  */
 
 function ensureAdminOrCurrentUser(req, res, next) {
+
+  console.log("req.params:", req.params);
+  console.log("res.locals.user:", res.locals.user);
   try {
     if (res.locals.user.isAdmin === false 
-        || req.params.username !== res.locals.user.username) {
-      throw new UnauthorizedError("Admin required to perform this action");
+        && req.params.username !== res.locals.user.username) {
+      throw new UnauthorizedError("Must be admin or modifying own data to perform this action");
     }
     return next();
   } catch (err) {
