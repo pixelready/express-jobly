@@ -29,7 +29,7 @@ describe( "create", function() {
   const newJob = {
     tile: "CEO",
     salary: 10000000,
-    equity: 32.765,
+    equity: 0.02,
     companyHandle: "c1"
   };
 
@@ -45,7 +45,7 @@ describe( "create", function() {
       .toEqual( [ {
         tile: "CEO",
         salary: 10000000,
-        equity: 32.765,
+        equity: 0.02,
         companyHandle: "c1"
       } ] );
   } );
@@ -71,19 +71,19 @@ describe( "findAll", function() {
       .toEqual( [ {
         tile: "job1",
         salary: 100000,
-        equity: 10,
+        equity: 1.0,
         companyHandle: "c1"
       },
       {
         tile: "job2",
         salary: 90000,
-        equity: 2,
+        equity: 0.2,
         companyHandle: "c1"
       },
       {
         tile: "job3",
         salary: 65000,
-        equity: 1.15,
+        equity: 0.0015,
         companyHandle: "c2"
       } 
       ] );
@@ -179,7 +179,7 @@ describe( "get", function() {
       .toEqual( {
         tile: "job1",
         salary: 100000,
-        equity: 10,
+        equity: 1.0,
         companyHandle: "c1"
       } );
   } );
@@ -197,83 +197,83 @@ describe( "get", function() {
 
 /************************************** update */
 
-// describe( "update", function() {
-//   const updateData = {
-//     name: "New",
-//     description: "New Description",
-//     numEmployees: 10,
-//     logoUrl: "http://new.img"
-//   };
+describe( "update", function() {
+  const updateData = {
+    tile: "job1",
+    salary: 200000,
+    equity: 1.0,
+    companyHandle: "c1"
+  };
 
-//   test( "works", async function() {
-//     let company = await Company.update( "c1", updateData );
-//     expect( company )
-//       .toEqual( {
-//         handle: "c1",
-//         ...updateData
-//       } );
+  test( "works", async function() {
+    let job = await Job.update( job1Id, updateData );
+    expect( job )
+      .toEqual( {
+        id: job1Id,
+        ...updateData
+      } );
 
-//     const result = await db.query( `SELECT handle, name, description, num_employees, logo_url
-//            FROM companies
-//            WHERE handle = 'c1'` );
-//     expect( result.rows )
-//       .toEqual( [ {
-//         handle: "c1",
-//         name: "New",
-//         description: "New Description",
-//         num_employees: 10,
-//         logo_url: "http://new.img"
-//       } ] );
-//   } );
+    const result = await db.query( `SELECT id, title, salary, equity, company_handle
+           FROM jobs
+           WHERE id = ${job1Id}` );
+    expect( result.rows )
+      .toEqual( [ {
+        id: job1Id,
+        tile: "job1",
+        salary: 200000,
+        equity: 1.0,
+        company_handle: "c1"
+      } ] );
+  } );
 
-//   test( "works: null fields", async function() {
-//     const updateDataSetNulls = {
-//       name: "New",
-//       description: "New Description",
-//       numEmployees: null,
-//       logoUrl: null
-//     };
+  test( "works: null fields", async function() {
+    const updateDataSetNulls = {
+        tile: "job1",
+        salary: null,
+        equity: null,
+        companyHandle: "c1"
+    };
 
-//     let company = await Company.update( "c1", updateDataSetNulls );
-//     expect( company )
-//       .toEqual( {
-//         handle: "c1",
-//         ...updateDataSetNulls
-//       } );
+    let job = await Job.update( job1Id, updateDataSetNulls );
+    expect( job )
+      .toEqual( {
+        id: job1Id,
+        ...updateDataSetNulls
+      } );
 
-//     const result = await db.query( `SELECT handle, name, description, num_employees, logo_url
-//            FROM companies
-//            WHERE handle = 'c1'` );
-//     expect( result.rows )
-//       .toEqual( [ {
-//         handle: "c1",
-//         name: "New",
-//         description: "New Description",
-//         num_employees: null,
-//         logo_url: null
-//       } ] );
-//   } );
+    const result = await db.query( `SELECT id, title, salary, equity, company_handle
+            FROM jobs
+            WHERE id = ${job1Id}` );
+    expect( result.rows )
+      .toEqual( [ {
+        id: job1Id,
+        tile: "job1",
+        salary: null,
+        equity: null,
+        company_handle: "c1"
+    } ] );
+  } );
 
-//   test( "not found if no such company", async function() {
-//     try {
-//       await Company.update( "nope", updateData );
-//       fail();
-//     } catch ( err ) {
-//       expect( err instanceof NotFoundError )
-//         .toBeTruthy();
-//     }
-//   } );
+  test( "not found if no such job", async function() {
+    try {
+      await Job.update( "nope", updateData );
+      fail();
+    } catch ( err ) {
+      expect( err instanceof NotFoundError )
+        .toBeTruthy();
+    }
+  } );
 
-//   test( "bad request with no data", async function() {
-//     try {
-//       await Company.update( "c1", {} );
-//       fail();
-//     } catch ( err ) {
-//       expect( err instanceof BadRequestError )
-//         .toBeTruthy();
-//     }
-//   } );
-// } );
+  test( "bad request with no data", async function() {
+    try {
+      await Job.update( job1Id, {} );
+      fail();
+    } catch ( err ) {
+      expect( err instanceof BadRequestError )
+        .toBeTruthy();
+    }
+  } );
+} );
 
 // /************************************** remove */
 
