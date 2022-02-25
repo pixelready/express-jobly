@@ -2,7 +2,7 @@
 
 const db = require( "../db.js" );
 const { BadRequestError, NotFoundError } = require( "../expressError" );
-const Job = require( "./job.js" );
+const { Job } = require( "./job.js" );
 const { commonBeforeAll, commonBeforeEach, commonAfterEach, commonAfterAll } = require( "./_testCommon" );
 
 beforeAll( commonBeforeAll );
@@ -27,7 +27,7 @@ afterAll( commonAfterAll );
    */
 describe( "create", function() {
   const newJob = {
-    tile: "CEO",
+    title: "CEO",
     salary: 10000000,
     equity: 0.02,
     companyHandle: "c1"
@@ -43,7 +43,7 @@ describe( "create", function() {
            WHERE title='CEO'` );
     expect( result.rows )
       .toEqual( [ {
-        tile: "CEO",
+        title: "CEO",
         salary: 10000000,
         equity: 0.02,
         companyHandle: "c1"
@@ -69,19 +69,19 @@ describe( "findAll", function() {
     let jobs = await Job.findAll( {} );
     expect( jobs )
       .toEqual( [ {
-        tile: "job1",
+        title: "job1",
         salary: 100000,
         equity: 1.0,
         companyHandle: "c1"
       },
       {
-        tile: "job2",
+        title: "job2",
         salary: 90000,
         equity: 0.2,
         companyHandle: "c1"
       },
       {
-        tile: "job3",
+        title: "job3",
         salary: 65000,
         equity: 0.0015,
         companyHandle: "c2"
@@ -177,7 +177,7 @@ describe( "get", function() {
     let job = await Job.get( job1Id );
     expect( job )
       .toEqual( {
-        tile: "job1",
+        title: "job1",
         salary: 100000,
         equity: 1.0,
         companyHandle: "c1"
@@ -199,7 +199,7 @@ describe( "get", function() {
 
 describe( "update", function() {
   const updateData = {
-    tile: "job1",
+    title: "job1",
     salary: 200000,
     equity: 1.0,
     companyHandle: "c1"
@@ -219,7 +219,7 @@ describe( "update", function() {
     expect( result.rows )
       .toEqual( [ {
         id: job1Id,
-        tile: "job1",
+        title: "job1",
         salary: 200000,
         equity: 1.0,
         company_handle: "c1"
@@ -228,7 +228,7 @@ describe( "update", function() {
 
   test( "works: null fields", async function() {
     const updateDataSetNulls = {
-        tile: "job1",
+        title: "job1",
         salary: null,
         equity: null,
         companyHandle: "c1"
@@ -247,7 +247,7 @@ describe( "update", function() {
     expect( result.rows )
       .toEqual( [ {
         id: job1Id,
-        tile: "job1",
+        title: "job1",
         salary: null,
         equity: null,
         company_handle: "c1"
@@ -277,57 +277,24 @@ describe( "update", function() {
 
 // /************************************** remove */
 
-// describe( "remove", function() {
-//   test( "works", async function() {
-//     await Company.remove( "c1" );
-//     const res = await db.query( "SELECT handle FROM companies WHERE handle='c1'" );
-//     expect( res.rows.length )
-//       .toEqual( 0 );
-//   } );
+describe( "remove", function() {
+  test( "works", async function() {
+    await Job.remove( job1Id );
+    const res = await db.query( `SELECT id FROM jobs WHERE id=${job1Id}` );
+    expect( res.rows.length )
+      .toEqual( 0 );
+  } );
 
-//   test( "not found if no such company", async function() {
-//     try {
-//       await Company.remove( "nope" );
-//       fail();
-//     } catch ( err ) {
-//       expect( err instanceof NotFoundError )
-//         .toBeTruthy();
-//     }
-//   } );
-// } );
-
-
-/** Create a job(from data), update db, return new job data.
-   *
-   *  Data should be {id, title, salary, equity, companyHandle}
-   *
-   *  Returns {id, title, salary, equity, companyHandle}
-   */
+  test( "not found if no such job", async function() {
+    try {
+      await Job.remove( "nope" );
+      fail();
+    } catch ( err ) {
+      expect( err instanceof NotFoundError )
+        .toBeTruthy();
+    }
+  } );
+} );
 
 
-
-
-// GET: Get all jobs - no auth
-
-// GET: Get a job by ID - no auth
-
-// PATCH: Update a job successfully
-
-// PATCH: Fail on bad data (admin)
-
-// PATCH: Fail on not found (admin)
-
-// PATCH: Fail on changing company handle (admin)
-
-// PATCH: Unauth if anon
-
-// PATCH: Unauth if non-admin
-
-// DELETE: Remove a job successfully
-
-// DELETE: Fail on not found (admin)
-
-// DELETE: Unauth if anon
-
-// DELETE: Unauth if non-admin
 
