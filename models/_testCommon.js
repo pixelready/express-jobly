@@ -37,9 +37,12 @@ async function commonBeforeAll() {
            ('job2', 90000, 0.2, 'c1'),
            ('job3', 65000, 0.0015, 'c2')`);
   
-  const job1Id = await db.query(`SELECT id FROM jobs WHERE title = 'job1'`);
-  const job2Id = await db.query(`SELECT id FROM jobs WHERE title = 'job2'`);
-  const job3Id = await db.query(`SELECT id FROM jobs WHERE title = 'job3'`);
+  const job1 = await db.query(`SELECT id FROM jobs WHERE title = 'job1'`);
+  const job2 = await db.query(`SELECT id FROM jobs WHERE title = 'job2'`);
+  const job3 = await db.query(`SELECT id FROM jobs WHERE title = 'job3'`);
+  const job1Id = job1.rows[0];
+  const job2Id = job2.rows[0];
+  const job3Id = job3.rows[0];
 }
 
 async function commonBeforeEach() {

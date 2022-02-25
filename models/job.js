@@ -43,6 +43,26 @@ class Job {
     return job;
   }
 
+    /** Find all jobs. 
+   * Returns [{ id, title, salary, equity, companyHandle }, ...]
+   * for all jobs
+   * */
+
+  static async findAll( ) {
+    // Guard against min > max
+
+
+    const companiesRes = await db.query( `SELECT id, title,
+                salary,
+                equity,
+                company_handle AS "companyHandle"
+           FROM jobs
+           ORDER BY id
+           `);
+
+    return companiesRes.rows;
+  }
+
   /** Given a job ID, return data about company.
    *
    * Returns { id, title, salary, equity, companyHandle }

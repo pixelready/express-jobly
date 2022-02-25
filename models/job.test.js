@@ -35,15 +35,11 @@ describe( "create", function() {
 
   test( "works", async function() {
     let job = await Job.create( newJob );
+    let {title, salary, equity, companyHandle} = newJob;
     expect( job )
-      .toEqual( {
-        title: "CEO",
-        salary: 10000000,
-        equity: "0.02",
-        companyHandle: "c1"
-      } );
+      .toEqual( {title, salary, equity: String(equity), companyHandle} );
 
-    const result = await db.query( `SELECT id, title, salary, equity, company_handle
+    const result = await db.query( `SELECT title, salary, equity, company_handle
            FROM jobs
            WHERE title='CEO'` );
     expect( result.rows )
@@ -55,40 +51,32 @@ describe( "create", function() {
       } ] );
   } );
 
-  test( "bad request with dupe", async function() {
-    try {
-      await Job.create( newJob );
-      await Job.create( newJob );
-      fail();
-    } catch ( err ) {
-      expect( err instanceof BadRequestError )
-        .toBeTruthy();
-    }
-  } );
 } );
 
 /************************************** findAll */
 
 describe( "findAll", function() {
   test( "works: no filter", async function() {
-    let jobs = await Job.findAll( {} );
+    let jobs = await Job.findAll( );
+    console.log("JOB 1 ID: ", job1Id);
     expect( jobs )
       .toEqual( [ {
+        id: job1Id,
         title: "job1",
         salary: 100000,
-        equity: 1.0,
+        equity: "1.0",
         companyHandle: "c1"
       },
-      {
+      { id: job2Id,
         title: "job2",
         salary: 90000,
-        equity: 0.2,
+        equity: "0.2",
         companyHandle: "c1"
       },
-      {
+      { id: job3Id,
         title: "job3",
         salary: 65000,
-        equity: 0.0015,
+        equity: "0.0015",
         companyHandle: "c2"
       } 
       ] );
