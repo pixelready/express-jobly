@@ -126,7 +126,7 @@ describe("POST /users", function () {
     expect(resp.statusCode).toEqual(400);
   });
 });
-
+// CODE REVIEW: test user cannot create admin
 /************************************** GET /users */
 
 describe("GET /users", function () {

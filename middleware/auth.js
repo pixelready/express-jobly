@@ -48,7 +48,9 @@ function ensureLoggedIn(req, res, next) {
 
 function ensureAdmin(req, res, next) {
   try {
-    if (res.locals.user.isAdmin === false) {
+    // CODE REVIEW: if user doesnt exist, short circuit return undefined
+    // if (res.locals.user?.isAdmin !== true)
+    if (res.locals.user.isAdmin !== true) {
       throw new UnauthorizedError("Admin required to perform this action");
     }
     return next();
@@ -63,11 +65,11 @@ function ensureAdmin(req, res, next) {
  */
 
 function ensureAdminOrCurrentUser(req, res, next) {
-
+  // CODE REVIEW: 
   console.log("req.params:", req.params);
   console.log("res.locals.user:", res.locals.user);
   try {
-    if (res.locals.user.isAdmin === false 
+    if (res.locals.user.isAdmin !== true 
         && req.params.username !== res.locals.user.username) {
       throw new UnauthorizedError("Must be admin or modifying own data to perform this action");
     }

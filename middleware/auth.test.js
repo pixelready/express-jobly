@@ -93,6 +93,7 @@ describe("ensureAdmin", function () {
   test("unauth if not admin", function () {
     expect.assertions(1);
     const req = {};
+    // CODE REVIEW: Dont pass in isAdmin false
     const res = { locals: { user: { isAdmin: false } } };
     const next = function (err) {
       expect(err instanceof UnauthorizedError).toBeTruthy();
