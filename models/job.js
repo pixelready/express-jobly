@@ -15,16 +15,17 @@ class Job {
    *
    *  Returns {id, title, salary, equity, companyHandle}
    */
-  static async create({ id, title, salary, equity, companyHandle }) {
-    const duplicateCheck = await db.query(
-      `SELECT id
-           FROM jobs
-           WHERE id = $1`,
-      [id]
-    );
+  static async create({title, salary, equity, companyHandle }) {
+    console.log("INSIDE CREATE:");
+    // const duplicateCheck = await db.query(
+    //   `SELECT id
+    //        FROM jobs
+    //        WHERE id = $1`,
+    //   [id]
+    // );
 
-    if (duplicateCheck.rows[0])
-      throw new BadRequestError(`Duplicate job: ${id}`);
+    // if (duplicateCheck.rows[0])
+    //   throw new BadRequestError(`Duplicate job: ${id}`);
 
     const result = await db.query(
       `
@@ -32,10 +33,10 @@ class Job {
                         title,
                         salary,
                         equity,
-                        companyHandle
+                        company_handle
                     )
                     VALUES ($1, $2, $3, $4)
-                    RETURNING title, salary, equity, companyHandle`,
+                    RETURNING title, salary, equity, company_handle AS "companyHandle"`,
       [title, salary, equity, companyHandle]
     );
     const job = result.rows[0];
